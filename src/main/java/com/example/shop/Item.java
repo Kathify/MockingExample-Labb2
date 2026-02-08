@@ -1,23 +1,55 @@
 package com.example.shop;
 
+import java.util.Objects;
+
 public class Item {
-    private final String name;
-    private final double price;
+    private String itemName;
+    private double price;
     private int quantity;
 
-    public Item(String name, double price, int quantity) {
-        if (price < 0) throw new IllegalArgumentException("Price cannot be negative");
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be at least 1");
-        this.name = name;
+    public Item(String itemName, double price, int quantity) {
+        this.itemName = itemName;
         this.price = price;
         this.quantity = quantity;
     }
 
-    public String getName() { return name; }
-    public double getPrice() { return price; }
-    public int getQuantity() { return quantity; }
+    public double getSubTotalPrice() {
+        return price * quantity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
     public void setQuantity(int quantity) {
-        if (quantity < 0) throw new IllegalArgumentException("Quantity cannot be negative");
         this.quantity = quantity;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Item item)) return false;
+        return Double.compare(price, item.price) == 0 && Objects.equals(itemName, item.itemName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(itemName, price);
     }
 }

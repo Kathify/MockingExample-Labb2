@@ -1,75 +1,60 @@
 package com.example.shop;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ShoppingCart {
 
-    private final Map<String, Item> items = new HashMap<>();
+    private List<Item> shoppingList = new ArrayList<>();
+    private double baseDiscountRate = 0.0;
 
-    public boolean addItem(String name, double price, int quantity) {
-        if (price < 0 || quantity <= 0) return false;
+    public void addItem(Item newItem) {
+        if (newItem.getPrice() < 0)
+            throw new IllegalArgumentException("Pris kan ej vara negativt");
 
-        if (items.containsKey(name)) {
-            Item existingItem = items.get(name);
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-        } else {
-            items.put(name, new Item(name, price, quantity));
+        if (newItem.getQuantity() <= 0)
+            throw new IllegalArgumentException("Kvantitet måste vara större än 0");
+
+        if (newItem.getItemName() == null || newItem.getItemName().isBlank())
+            throw new IllegalArgumentException("Ej giltigt varunamn");
+
+        for (Item existingItem : shoppingList) {
+            if (existingItem.equals(newItem)) {
+                int updatedQuantity = existingItem.getQuantity() + newItem.getQuantity();
+                existingItem.setQuantity(updatedQuantity);
+                return;
+            }
         }
-        return true;
+
+        shoppingList.add(newItem);
     }
 
-    public boolean removeItem(String name) {
-        return items.remove(name) != null;
+    public List<Item> getShoppingList() {
+        return this.shoppingList;
     }
 
-    public double totalPrice() {
-        return items.values().stream()
-                .mapToDouble(i -> i.getPrice() * i.getQuantity())
+    public void removeItem(Item item) {
+
+        if (!shoppingList.contains(item))
+            throw new IllegalStateException("Kan ej ta bort inte-existerande vara, listan lämnas oförändrad.");
+
+        shoppingList.remove(item);
+
+    }
+
+    public double getTotalPrice() {
+        double totalBeforeDiscount = shoppingList.stream()
+                .mapToDouble(Item::getSubTotalPrice)
                 .sum();
+
+        return totalBeforeDiscount * (1 - baseDiscountRate);
     }
 
-    public void applyDiscount(double percent) {
-        if (percent <= 0 || percent > 100) return;
-        for (Item item : items.values()) {
-            item.setPrice(item.getPrice() * (1 - percent / 100));
-        }
-    }
-
-    public Map<String, Item> getItems() {
-        return Collections.unmodifiableMap(items);
-    }
-
-    public static class Item {
-        private final String name;
-        private double price;
-        private int quantity;
-
-        public Item(String name, double price, int quantity) {
-            this.name = name;
-            this.price = price;
-            this.quantity = quantity;
+    public void addDiscount(double discountRate) {
+        if (discountRate < 0.0 || discountRate >= 1.0) {
+            throw new IllegalArgumentException("ogiltig rabatt.");
         }
 
-        public String getName() {
-            return name;
-        }
-
-        public double getPrice() {
-            return price;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public void setPrice(double price) {
-            this.price = price;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
-        }
+        this.baseDiscountRate = discountRate;
     }
 }
