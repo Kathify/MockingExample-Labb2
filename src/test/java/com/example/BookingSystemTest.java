@@ -21,8 +21,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Tester för BookingSystem.
- * Alla externa beroenden mockas.
+ * Test för BookingSystem
+ * Alla externa beroenden mockas
  */
 @ExtendWith(MockitoExtension.class)
 class BookingSystemTest {
@@ -49,7 +49,7 @@ class BookingSystemTest {
             when(timeProvider.getCurrentTime()).thenReturn(now);
         }
 
-        // ---------- bookRoom ----------
+        // bookRoom
 
         @Test
         void book_room_with_valid_input_should_succeed() throws NotificationException {
@@ -122,7 +122,7 @@ class BookingSystemTest {
             verify(roomRepository, never()).save(any());
         }
 
-        // ---------- cancelBooking ----------
+        // cancelBooking
 
         @Test
         void cancel_future_booking_should_succeed() throws NotificationException {
