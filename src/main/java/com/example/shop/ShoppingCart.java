@@ -1,60 +1,42 @@
 package com.example.shop;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShoppingCart {
 
-    private List<Item> shoppingList = new ArrayList<>();
-    private double baseDiscountRate = 0.0;
+    private final Map<Item, Integer> items = new HashMap<>();
+    private double discount = 0.0;
 
-    public void addItem(Item newItem) {
-        if (newItem.getPrice() < 0)
-            throw new IllegalArgumentException("Pris kan ej vara negativt");
-
-        if (newItem.getQuantity() <= 0)
-            throw new IllegalArgumentException("Kvantitet måste vara större än 0");
-
-        if (newItem.getItemName() == null || newItem.getItemName().isBlank())
-            throw new IllegalArgumentException("Ej giltigt varunamn");
-
-        for (Item existingItem : shoppingList) {
-            if (existingItem.equals(newItem)) {
-                int updatedQuantity = existingItem.getQuantity() + newItem.getQuantity();
-                existingItem.setQuantity(updatedQuantity);
-                return;
-            }
-        }
-
-        shoppingList.add(newItem);
-    }
-
-    public List<Item> getShoppingList() {
-        return this.shoppingList;
+    public void addItem(Item item, int quantity) {
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");
+        items.put(item, items.getOrDefault(item, 0) + quantity);
     }
 
     public void removeItem(Item item) {
+        if (!items.containsKey(item)) throw new IllegalArgumentException("Item not in cart");
+        items.remove(item);
+    }
 
-        if (!shoppingList.contains(item))
-            throw new IllegalStateException("Kan ej ta bort inte-existerande vara, listan lämnas oförändrad.");
+    public void updateItemQuantity(Item item, int quantity) {
+        if (!items.containsKey(item)) throw new IllegalArgumentException("Item not in cart");
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");
+        items.put(item, quantity);
+    }
 
-        shoppingList.remove(item);
-
+    public void applyDiscount(double percent) {
+        if (percent < 0 || percent > 100) throw new IllegalArgumentException("Invalid discount");
+        discount = percent;
     }
 
     public double getTotalPrice() {
-        double totalBeforeDiscount = shoppingList.stream()
-                .mapToDouble(Item::getSubTotalPrice)
+        double total = items.entrySet().stream()
+                .mapToDouble(e -> e.getKey().getPrice() * e.getValue())
                 .sum();
-
-        return totalBeforeDiscount * (1 - baseDiscountRate);
+        return total * (1 - discount / 100);
     }
 
-    public void addDiscount(double discountRate) {
-        if (discountRate < 0.0 || discountRate >= 1.0) {
-            throw new IllegalArgumentException("ogiltig rabatt.");
-        }
-
-        this.baseDiscountRate = discountRate;
+    public Map<Item, Integer> getItems() {
+        return Map.copyOf(items);
     }
 }
